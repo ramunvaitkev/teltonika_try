@@ -1,0 +1,53 @@
+version: '3.9'
+
+networks:
+  lb_net:
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+        - subnet: "2001:db8::/64"
+  web1_net:
+    ipam:
+      config:
+        - subnet: 192.168.2.0/24
+        - subnet: "2001:db7::/64"
+  web2_net:
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24
+        - subnet: "2001:db6::/64"
+services:
+  load-balancer:
+    image: nginx:1.25.2
+    container_name: load-balancer
+    volumes:
+      - ./nginx/load-balancer.conf:/etc/nginx/nginx.conf
+      - ./html/load-balancer:/usr/share/nginx/html
+    networks:
+      lb_net:
+        ipv4_address: 192.168.1.2
+      web1_net:
+      web2_net:
+    ports:
+      - "80:81"
+      - "443:443" # For future SSL setup
+
+  web1:
+    image: nginx:1.25.2
+    container_name: web1
+    volumes:
+      - ./nginx/web1.conf:/etc/nginx/nginx.conf
+      - ./html/web1:/usr/share/nginx/html
+    networks:
+      web1_net:
+        ipv4_address: 192.168.2.2
+
+  web2:
+    image: nginx:1.25.2
+    container_name: web2
+    volumes:
+      - ./nginx/web2.conf:/etc/nginx/nginx.conf
+      - ./html/web2:/usr/share/nginx/html
+    networks:
+      web2_net:
+        ipv4_address: 192.168.3.2
